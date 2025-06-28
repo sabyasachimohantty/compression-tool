@@ -1,111 +1,66 @@
-
-class Heap {
-
-    constructor() {
-        this.items = [];
+export default class PriorityQueue {
+    constructor(compare) {
+        this.heap = [];
+        this.compare = compare;
     }
 
-    #swap(i, j) {
-        const tmp = this.items[i]
-        this.items[i] = this.items[j]
-        this.items[j] = tmp
-        return
+    enqueue(value) {
+        this.heap.push(value);
+        this.bubbleUp();
     }
 
-    #left(i) {
-        return 2 * i + 1
-    }
-
-    #right(i) {
-        return 2 * i + 2
-    }
-
-    #parent(i) {
-        return Math.floor((i - 1) / 2)
-    }
-
-    #upheap(i) {
-        while (i > 0) {
-            let par = this.#parent(i)
-            if (this.items[par] > this.items[i]) {
-                this.#swap(i, par)
-                i = par
-            } else {
-                return
-            }
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while (index > 0) {
+            let element = this.heap[index],
+                parentIndex = Math.floor((index - 1) / 2),
+                parent = this.heap[parentIndex];
+            if (this.compare(element, parent) < 0) break;
+            this.heap[index] = parent;
+            this.heap[parentIndex] = element;
+            index = parentIndex;
         }
     }
 
-    #downheap(i) {
-        let minIndex = i
-        while (i < this.items.length) {
-            const left = this.#left(i)
-            const right = this.#right(i)
-            if (left < this.items.length && this.items[left] < this.items[minIndex]) {
-                minIndex = left
-            }
-            if (right < this.items.length && this.items[right] < this.items[minIndex]) {
-                minIndex = right
-            }
-            if (minIndex === i) {
-                return
-            }
-            this.#swap(i, minIndex)
-            i = minIndex
+    dequeue() {
+        let max = this.heap[0];
+        let end = this.heap.pop();
+        if (this.heap.length > 0) {
+            this.heap[0] = end;
+            this.sinkDown(0);
+        }
+        return max;
+    }
+
+    sinkDown(index) {
+        let left = 2 * index + 1,
+            right = 2 * index + 2,
+            largest = index;
+
+        if (
+            left < this.heap.length &&
+            this.compare(this.heap[left], this.heap[largest]) > 0
+        ) {
+            largest = left;
+        }
+
+        if (
+            right < this.heap.length &&
+            this.compare(this.heap[right], this.heap[largest]) > 0
+        ) {
+            largest = right;
+        }
+
+        if (largest !== index) {
+            [this.heap[largest], this.heap[index]] = [
+                this.heap[index],
+                this.heap[largest],
+            ];
+            this.sinkDown(largest);
         }
     }
 
-    peek() {
-        try {    
-            return this.items[0];
-        } catch (error) {
-            throw new Error('The heap is empty')
-        }
-    }
-
-    add(val) {
-        this.items.push(val);
-        let i = this.items.length - 1
-        if (i === 0) {
-            return
-        }
-        this.#upheap(i)
-    }
-
-    remove() {
-        try {
-            const val = this.items[0]
-            this.items[0] = this.items.pop()
-            this.#downheap(0)
-            return val
-        } catch (error) {
-            throw new Error('Cannot remove from an empty heap')
-        }
-    }
-
-    heapify(arr) {
-        this.items = arr
-        let i = this.#parent(this.items.length - 1)
-        while (i >= 0) {
-            this.#downheap(i)
-            i--
-        }
+    isEmpty() {
+        return this.heap.length === 0;
     }
 }
-
-// try {
-//     const heap = new Heap()
-//     heap.heapify([10, -50, 78, 1, 0, 67])
-//     // heap.add(20)
-//     // heap.add(15)
-//     // heap.add(100)
-//     // heap.add(-10)
-//     // heap.add(200)
-//     console.log(heap.remove())
-//     console.log(heap.remove())
-//     console.log(heap.remove())
-//     console.log(heap.remove())
-//     console.log(heap.peek())
-// } catch (error) {
-//     console.log(error)
-// }
